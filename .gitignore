@@ -1,3 +1,6 @@
+# Upload files
+tmp/
+
 # Logs
 logs
 *.log
