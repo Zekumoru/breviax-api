@@ -57,10 +57,13 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
       isProcessing = false;
 
       if (error) {
-        logger.error(error, `Error executing command: ${stderr}`);
+        logger.error(
+          error,
+          `Error executing command: ${stderr || error.message}`
+        );
         res.status(500).json({
           status: 500,
-          message: `Something went wrong: ${stderr || error.message}`,
+          message: `Could not transcribe audio`,
         });
         return;
       }
@@ -74,13 +77,26 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
           encoding: 'utf-8',
         }
       );
+
+      const summary = await writeSummary(transcription);
+      if (!summary) {
+        logger.error(
+          `Error while creating summary for ${filename}. GPT returned a null string.`
+        );
+        res.status(500).json({
+          status: 500,
+          message: `Could not write summary`,
+        });
+        return;
+      }
+
       logger.info(`Created summary: ${filename}`);
 
       await removeTmpFiles();
 
       res.json({
         status: 200,
-        message: (await writeSummary(transcription)) ?? 'Transcription failed.',
+        message: summary,
       });
     }
   );
