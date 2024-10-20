@@ -4,6 +4,7 @@ import path from 'path';
 import { exec } from 'child_process';
 import upload from '../middlewares/upload';
 import writeSummary from '../utils/writeSummary';
+import appConfig from '../appConfig';
 
 const apiRouter = express.Router();
 
@@ -15,7 +16,7 @@ apiRouter.get('/', (req, res) => {
 });
 
 const removeTmpFiles = async () => {
-  const directory = './tmp/uploads';
+  const directory = appConfig.UPLOAD_FOLDER;
   for (const file of await fs.readdir(directory))
     await fs.unlink(path.join(directory, file));
 };
@@ -32,11 +33,25 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
 
   isProcessing = true;
   const filename = req.file?.filename;
+  const uploadDir = appConfig.UPLOAD_FOLDER;
+
+  if (!filename) {
+    res.status(500).json({
+      status: 500,
+      message: 'An internal error occurred.',
+    });
+    console.error(
+      'Error: Filename is undefined. It may probably has been deleted.'
+    );
+    return;
+  }
 
   console.log(`Processing file: ${filename}`);
 
   exec(
-    `whisperx --compute_type float32 --hf_token ${process.env.HUGGING_FACE_TOKEN} .\\tmp\\uploads\\${filename} -o .\\tmp\\uploads`,
+    `whisperx --compute_type float32 --hf_token ${
+      process.env.HUGGING_FACE_TOKEN
+    } ${path.join(uploadDir, filename)} -o ${uploadDir}`,
     async (error, stdout, stderr) => {
       isProcessing = false;
 
@@ -52,9 +67,12 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
       console.log(`Processed file: ${filename}`);
 
       console.log(`Creating summary: ${filename}`);
-      const transcription = await fs.readFile(`./tmp/uploads/${filename}.srt`, {
-        encoding: 'utf-8',
-      });
+      const transcription = await fs.readFile(
+        path.join(uploadDir, `${filename}.srt`),
+        {
+          encoding: 'utf-8',
+        }
+      );
       console.log(`Created summary: ${filename}`);
 
       await removeTmpFiles();

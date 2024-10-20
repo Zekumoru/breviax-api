@@ -1,9 +1,10 @@
 import multer from 'multer';
+import appConfig from '../appConfig';
 
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, './tmp/uploads');
+      cb(null, appConfig.UPLOAD_FOLDER);
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
