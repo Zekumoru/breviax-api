@@ -5,6 +5,7 @@ import { exec } from 'child_process';
 import upload from '../middlewares/upload';
 import writeSummary from '../utils/writeSummary';
 import appConfig from '../appConfig';
+import logger from '../utils/logger';
 
 const apiRouter = express.Router();
 
@@ -40,13 +41,13 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
       status: 500,
       message: 'An internal error occurred.',
     });
-    console.error(
+    logger.error(
       'Error: Filename is undefined. It may probably has been deleted.'
     );
     return;
   }
 
-  console.log(`Processing file: ${filename}`);
+  logger.info(`Processing file: ${filename}`);
 
   exec(
     `whisperx --compute_type float32 --hf_token ${
@@ -56,7 +57,7 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
       isProcessing = false;
 
       if (error) {
-        console.error(`Error executing command: ${stderr}`);
+        logger.error(error, `Error executing command: ${stderr}`);
         res.status(500).json({
           status: 500,
           message: `Something went wrong: ${stderr || error.message}`,
@@ -64,16 +65,16 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
         return;
       }
 
-      console.log(`Processed file: ${filename}`);
+      logger.info(`Processed file: ${filename}`);
 
-      console.log(`Creating summary: ${filename}`);
+      logger.info(`Creating summary: ${filename}`);
       const transcription = await fs.readFile(
         path.join(uploadDir, `${filename}.srt`),
         {
           encoding: 'utf-8',
         }
       );
-      console.log(`Created summary: ${filename}`);
+      logger.info(`Created summary: ${filename}`);
 
       await removeTmpFiles();
 
