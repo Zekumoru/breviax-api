@@ -1,5 +1,8 @@
 import path from 'path';
 
 export default {
-  UPLOAD_FOLDER: path.join(__dirname, 'tmp/uploads'),
+  paths: {
+    PROMPT_FILE: path.join(__dirname, 'prompt.txt'),
+    UPLOAD_FOLDER: path.join(__dirname, 'tmp/uploads'),
+  },
 };

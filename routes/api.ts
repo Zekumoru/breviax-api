@@ -17,7 +17,7 @@ apiRouter.get('/', (req, res) => {
 });
 
 const removeTmpFiles = async () => {
-  const directory = appConfig.UPLOAD_FOLDER;
+  const directory = appConfig.paths.UPLOAD_FOLDER;
   for (const file of await fs.readdir(directory))
     await fs.unlink(path.join(directory, file));
 };
@@ -34,7 +34,7 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
 
   isProcessing = true;
   const filename = req.file?.filename;
-  const uploadDir = appConfig.UPLOAD_FOLDER;
+  const uploadDir = appConfig.paths.UPLOAD_FOLDER;
 
   if (!filename) {
     res.status(500).json({
