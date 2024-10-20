@@ -1,6 +1,6 @@
-# WhisperX API: An Audio Transcription and Summarization API
+# BreviaX API: An Audio Transcription and Summarization API
 
-A NodeJS backend API which processes audio files by transcribing them using WhisperX which is run locally and then generating a concise summary using OpenAI's GPT-4o mini model.
+BreviaX is a NodeJS backend API which processes audio files by transcribing them using WhisperX which is run locally and then generating a concise summary using OpenAI's GPT-4o mini model.
 
 > [WARNING]: This project is in its prototype stage. The current code will be completely replaced in the future with a new design and structure. This prototype is intended to demonstrate the potential of the API and does not reflect the final implementation.
 
