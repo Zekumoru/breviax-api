@@ -22,8 +22,20 @@ yarn start
 
 3. To make the server visible in the Internet, forward the port using the `PORTS` tab in VSCode which is next to the `TERMINAL` tab. Click on the `Forward a Port` button, type the port, and finally set the forwarded's address `Visibility` to public.
 
-## API url
+> If you used VSCode to forward the port, you'll be given a link such as `https://xxxx.euw.devtunnels.ms/`, use the API endpoints using that link. For example: `https://xxxx.euw.devtunnels.ms/api/upload`.
 
-The endpoint to upload the audio file for processing is `/api/upload`. For example, if you used VSCode to forward the port, you'll be given a link such as `https://xxxx.euw.devtunnels.ms/`, upload the file in this endpoint `https://4h2j998b-3000.euw.devtunnels.ms/api/upload` using `POST` method.
+## API Endpoints
+
+### GET: /
+
+Returns a 200 message that the server is up and running.
+
+### GET: /api
+
+Returns a 200 message that the API route is available.
+
+### POST: /api/upload
+
+The endpoint to upload the audio file for processing.
 
 > [WARNING]: WhisperX is currently set to handle Italian audio inputs. If you desire to use other language, edit the `prompt.txt` file and remove/change the `--language it` option inside the `exec()` command in the `routes/api.ts` file.
