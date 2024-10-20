@@ -50,7 +50,7 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
   logger.info(`Processing file: ${filename}`);
 
   exec(
-    `whisperx --compute_type float32 --hf_token ${
+    `whisperx --compute_type float32 --language it --hf_token ${
       process.env.HUGGING_FACE_TOKEN
     } ${path.join(uploadDir, filename)} -o ${uploadDir}`,
     async (error, stdout, stderr) => {

@@ -25,3 +25,5 @@ yarn start
 ## API url
 
 The endpoint to upload the audio file for processing is `/api/upload`. For example, if you used VSCode to forward the port, you'll be given a link such as `https://xxxx.euw.devtunnels.ms/`, upload the file in this endpoint `https://4h2j998b-3000.euw.devtunnels.ms/api/upload` using `POST` method.
+
+> [WARNING]: WhisperX is currently set to handle Italian audio inputs. If you desire to use other language, edit the `prompt.txt` file and remove/change the `--language it` option inside the `exec()` command in the `routes/api.ts` file.
