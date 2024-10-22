@@ -1,6 +1,4 @@
-// languages.ts
-
-export const languages = [
+const languages = [
   { language: 'Afrikaans', code: 'af' },
   { language: 'Amharic', code: 'am' },
   { language: 'Arabic', code: 'ar' },
@@ -103,6 +101,7 @@ export const languages = [
   { language: 'Chinese', code: 'zh' },
 ] as const;
 
+export default languages;
 export type LanguageName = (typeof languages)[number]['language'];
 export type LanguageCode = (typeof languages)[number]['code'];
 export type Language = (typeof languages)[number];

@@ -6,7 +6,7 @@ import upload from '../middlewares/upload';
 import writeSummary from '../utils/writeSummary';
 import appConfig from '../appConfig';
 import logger from '../utils/logger';
-import { Language, languages } from '../utils/languages';
+import languages, { Language } from '../utils/languages';
 
 const apiRouter = express.Router();
 
@@ -34,7 +34,7 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
   }
 
   // language option
-  let language: Language | null | undefined = null;
+  let language: Language | undefined;
   if (req.body && req.body.language) {
     language = languages.find(
       (language) =>
