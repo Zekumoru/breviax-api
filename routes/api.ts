@@ -32,7 +32,6 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
     return;
   }
 
-  isProcessing = true;
   const filename = req.file?.filename;
   const uploadDir = appConfig.paths.UPLOAD_FOLDER;
 
@@ -47,6 +46,7 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
     return;
   }
 
+  isProcessing = true;
   logger.info(`Processing file: ${filename}`);
 
   exec(
