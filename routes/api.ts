@@ -6,6 +6,7 @@ import upload from '../middlewares/upload';
 import writeSummary from '../utils/writeSummary';
 import appConfig from '../appConfig';
 import logger from '../utils/logger';
+import { Language, languages } from '../utils/languages';
 
 const apiRouter = express.Router();
 
@@ -32,9 +33,25 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
     return;
   }
 
-  const filename = req.file?.filename;
-  const uploadDir = appConfig.paths.UPLOAD_FOLDER;
+  // language option
+  let language: Language | null | undefined = null;
+  if (req.body && req.body.language) {
+    language = languages.find(
+      (language) =>
+        language.language === req.body.language ||
+        language.code === req.body.language
+    ) as Language | undefined;
 
+    if (!language) {
+      res
+        .status(400)
+        .json({ status: 400, message: 'Invalid language option.' });
+      return;
+    }
+  }
+
+  // check if file exists
+  const filename = req.file?.filename;
   if (!filename) {
     res.status(500).json({
       status: 500,
@@ -44,13 +61,18 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
     return;
   }
 
+  // process audio
   isProcessing = true;
   logger.info(`Processing file: ${filename}`);
 
+  const uploadDir = appConfig.paths.UPLOAD_FOLDER;
   exec(
-    `whisperx --compute_type float32 --output_format srt --language it --hf_token ${
-      process.env.HUGGING_FACE_TOKEN
-    } ${path.join(uploadDir, filename)} -o ${uploadDir}`,
+    `whisperx --compute_type float32 --output_format srt ${
+      language ? `--language ${language.code}` : ''
+    } --hf_token ${process.env.HUGGING_FACE_TOKEN} ${path.join(
+      uploadDir,
+      filename
+    )} -o ${uploadDir}`,
     async (error, stdout, stderr) => {
       isProcessing = false;
 
