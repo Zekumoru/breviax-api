@@ -85,20 +85,24 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
   if (!filename) {
     res.status(400).json({
       status: 400,
-      message: 'Missing file or unsupported',
+      message: 'Missing audio file or unsupported',
     });
-    logger.error('Error: Missing file or unsupported.');
+    logger.error('Error: Missing audio file or unsupported.');
     return;
   }
 
   // process audio
   isProcessing = true;
-  logger.info(`Processing file: ${filename}`);
+  logger.info(
+    `Processing audio file: ${filename} (model: ${
+      model ?? 'medium'
+    }, language: ${language?.code ?? 'auto'})`
+  );
 
   const uploadDir = appConfig.paths.UPLOAD_FOLDER;
   exec(
     `whisperx --compute_type float32 --output_format srt ${
-      model ? model : ''
+      model ? `--model ${model}` : ''
     } ${language ? `--language ${language.code}` : ''} --hf_token ${
       process.env.HUGGING_FACE_TOKEN
     } ${path.join(uploadDir, filename)} -o ${uploadDir}`,
@@ -117,7 +121,7 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
         return;
       }
 
-      logger.info(`Processed file: ${filename}`);
+      logger.info(`Processed audio file: ${filename}`);
 
       logger.info(`Creating summary: ${filename}`);
       const transcription = await fs.readFile(
@@ -143,10 +147,17 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
       logger.info(`Created summary: ${filename}`);
 
       await removeTmpFiles();
+      logger.info(
+        `Finished transcription and summarization of audio file: ${filename}`
+      );
 
       res.json({
         status: 200,
         message: summary,
+        options: {
+          language: language?.code ?? 'auto',
+          model: model ?? 'medium',
+        },
       });
     }
   );
