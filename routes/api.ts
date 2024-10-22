@@ -40,9 +40,7 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
       status: 500,
       message: 'An internal error occurred.',
     });
-    logger.error(
-      'Error: Filename is undefined. It may probably has been deleted.'
-    );
+    logger.error('Error: Missing file or unsupported.');
     return;
   }
 
