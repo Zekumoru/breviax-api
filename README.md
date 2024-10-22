@@ -15,7 +15,7 @@ SUPPORT_LARGE_MODEL=false
 PORT=3000
 ```
 
-If `SUPPORT_LARGE_MODEL` is false then only use Whisper's medium, small, and tiny models. Set it to `true` if your server can handle larger models.
+If `SUPPORT_LARGE_MODEL` is false then only uses Whisper's medium, small, and tiny models. Set it to `true` if your server can handle larger models.
 
 2. And then run the following commands to install the necessary packages and finally start the app:
 
@@ -41,5 +41,3 @@ Returns a 200 message that the API route is available.
 ### POST: /api/upload
 
 The endpoint to upload the audio file for processing.
-
-> [WARNING]: WhisperX is currently set to handle Italian audio inputs. If you desire to use other language, edit the `prompt.txt` file and remove/change the `--language it` option inside the `exec()` command in the `routes/api.ts` file.
