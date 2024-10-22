@@ -7,6 +7,7 @@ import writeSummary from '../utils/writeSummary';
 import appConfig from '../appConfig';
 import logger from '../utils/logger';
 import languages, { Language } from '../utils/languages';
+import models from '../utils/models';
 
 const apiRouter = express.Router();
 
@@ -50,6 +51,35 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
     }
   }
 
+  // model option
+  let model: string | undefined;
+  if (req.body && req.body.model) {
+    model = models.find((model) => model === req.body.model);
+
+    if (!model) {
+      res.status(400).json({
+        status: 400,
+        message: `Invalid model option. The available models are: ${models.reduce(
+          (str, model, index) => {
+            if (index === 0) return model;
+            if (index === models.length - 1) return `${str}, and ${model}`;
+            return `${str}, ${model}`;
+          },
+          ''
+        )}. Default is medium.`,
+      });
+      return;
+    }
+
+    if (process.env.SUPPORT_LARGE_MODEL !== 'true' && model.includes('large')) {
+      res.status(501).json({
+        status: 501,
+        message: `Model '${model}' is not supported by the CPU of the server. Please try using lower models.`,
+      });
+      return;
+    }
+  }
+
   // check if file exists
   const filename = req.file?.filename;
   if (!filename) {
@@ -68,11 +98,10 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
   const uploadDir = appConfig.paths.UPLOAD_FOLDER;
   exec(
     `whisperx --compute_type float32 --output_format srt ${
-      language ? `--language ${language.code}` : ''
-    } --hf_token ${process.env.HUGGING_FACE_TOKEN} ${path.join(
-      uploadDir,
-      filename
-    )} -o ${uploadDir}`,
+      model ? model : ''
+    } ${language ? `--language ${language.code}` : ''} --hf_token ${
+      process.env.HUGGING_FACE_TOKEN
+    } ${path.join(uploadDir, filename)} -o ${uploadDir}`,
     async (error, stdout, stderr) => {
       isProcessing = false;
 

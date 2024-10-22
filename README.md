@@ -11,7 +11,11 @@ BreviaX is a NodeJS backend API which processes audio files by transcribing them
 ```env
 HUGGING_FACE_TOKEN=<HF_TOKEN>
 OPENAI_API_KEY=<OPENAI_KEY>
+SUPPORT_LARGE_MODEL=false
+PORT=3000
 ```
+
+If `SUPPORT_LARGE_MODEL` is false then only use Whisper's medium, small, and tiny models. Set it to `true` if your server can handle larger models.
 
 2. And then run the following commands to install the necessary packages and finally start the app:
 
