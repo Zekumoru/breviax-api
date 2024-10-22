@@ -87,6 +87,7 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
           status: 500,
           message: `Could not write summary`,
         });
+        await removeTmpFiles();
         return;
       }
 
