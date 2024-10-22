@@ -98,7 +98,7 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
         }
       );
 
-      const summary = await writeSummary(transcription);
+      const summary = await writeSummary(transcription, language);
       if (!summary) {
         logger.error(
           `Error while creating summary for ${filename}. GPT returned a null string.`

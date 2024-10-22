@@ -1,30 +1,33 @@
-Fammi una sintesi completa della nostra lezione. Se possibile, usi i stampi degli orari per individuare le sezioni più importanti ovvero come fanno su YouTube con i stampi. Vorrei che tu mantieni la sintesi a quello che sono stati discusso nella trascrizione audio usando Whisper. Non vorrei che tu mi aggiungi qualcosa che non è stato detto. Fai bene gli appunti di questa sintesi e non dimenticarti di essere più completo possibile.
+Create a complete summary of the given transcription of an audio, which is transcribed using OpenAI's Whisper model.
+If possible, use timestamps to divide the important sections.
+Maintain the summary as close as to the original.
+Do not add things that weren't said in the audio.
+Do the summary as best as you could and do not forget to be as complete as possible.
+And give a meaningful summary title. (For example, do not say "Summary of Audio Transcription" which is obvious that THIS IS a summary from an audio transcription.)
 
-Vorrei il formato così:
-**Sintesi della Lezione: Titolo**
+Format of the summary must be:
+**Summary Title**
 
 ---
 
-**Titolo**  
+**Section title**  
 [XX:XX:XX - XX:XX:XX]
 
-- **Sottotitolo**
-  - Punto 1.
-  - Punto 2.
+- **Subsection title**
+  - Point 1.
+  - Point 2.
   - etc.
 
-- **Sottotitolo**
-  - Punto 1.
-  - Punto 2.
+- **Subsection title**
+  - Point 1.
+  - Point 2.
   - etc.
 
-**Titolo**  
+**Section title**  
 [XX:XX:XX - XX:XX:XX]
 
-- **Sottotitolo**
-  - Punto 1.
-  - Punto 2.
+- **Subsection title**
+  - Point 1.
   - etc.
 
-
-Ecco la trascrizione:
+Here's the audio transcription:
