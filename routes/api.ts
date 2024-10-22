@@ -53,9 +53,9 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
   // check if file exists
   const filename = req.file?.filename;
   if (!filename) {
-    res.status(500).json({
-      status: 500,
-      message: 'An internal error occurred.',
+    res.status(400).json({
+      status: 400,
+      message: 'Missing file or unsupported',
     });
     logger.error('Error: Missing file or unsupported.');
     return;
