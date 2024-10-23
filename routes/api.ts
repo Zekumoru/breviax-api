@@ -138,6 +138,7 @@ apiRouter.post(
           status: 500,
           message: `Transcription failed`,
         });
+        await fs.unlink(path.join(appConfig.paths.UPLOAD_FOLDER, filename));
         return;
       }
 
