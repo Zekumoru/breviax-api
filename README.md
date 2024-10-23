@@ -23,9 +23,13 @@ curl -X POST https://breviax.zekumoru.com/api/upload -F "audio=@sample.mp3" -F "
 ```env
 HUGGING_FACE_TOKEN=<HF_TOKEN>
 OPENAI_API_KEY=<OPENAI_KEY>
+DEEPGRAM_API_KEY=<DEEPGRAM_KEY>
+SUPPORT_LOCAL_TRANSCRIPTION=false
 SUPPORT_LARGE_MODEL=false
 PORT=3000
 ```
+
+If `SUPPORT_LOCAL_TRANSCRIPTION` is false then only uses `nova-2` model.
 
 If `SUPPORT_LARGE_MODEL` is false then only uses Whisper's medium, small, and tiny models. Set it to `true` if your server can handle larger models.
 
