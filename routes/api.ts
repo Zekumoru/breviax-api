@@ -1,13 +1,21 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
-import { exec } from 'child_process';
 import upload from '../middlewares/upload';
 import writeSummary from '../utils/writeSummary';
 import appConfig from '../appConfig';
 import logger from '../utils/logger';
-import languages, { Language } from '../utils/languages';
-import models from '../utils/models';
+import asyncHandler from 'express-async-handler';
+import localWhisperXLanguages, {
+  LocalWhisperXLanguage,
+} from '../utils/transcribe-handlers/local-whisperx/local-whisperx-languages';
+import localWhisperXModels, {
+  LocalWhisperXModels,
+} from '../utils/transcribe-handlers/local-whisperx/local-whisperx-models';
+import novaLanguages, {
+  NovaLanguage,
+} from '../utils/transcribe-handlers/nova/nova-languages';
+import transcribe from '../utils/transcribe';
 
 const apiRouter = express.Router();
 
@@ -24,113 +32,117 @@ const removeTmpFiles = async () => {
     await fs.unlink(path.join(directory, file));
 };
 
-let isProcessing = false;
-apiRouter.post('/upload', upload.single('audio'), (req, res) => {
-  if (isProcessing) {
-    res.status(429).json({
-      status: 429,
-      message: 'Server is already processing an audio. Please try again later.',
-    });
-    return;
-  }
+type localWhisperXModels = LocalWhisperXModels | 'nova-2';
+apiRouter.post(
+  '/upload',
+  upload.single('audio'),
+  asyncHandler(async (req, res) => {
+    // model option
+    let model: string | undefined;
+    if (req.body && req.body.model && req.body.model !== 'nova-2') {
+      model = localWhisperXModels.find((model) => model === req.body.model);
 
-  // language option
-  let language: Language | undefined;
-  if (req.body && req.body.language) {
-    language = languages.find(
-      (language) =>
-        language.language === req.body.language ||
-        language.code === req.body.language
-    ) as Language | undefined;
-
-    if (!language) {
-      res
-        .status(400)
-        .json({ status: 400, message: 'Invalid language option.' });
-      return;
-    }
-  }
-
-  // model option
-  let model: string | undefined;
-  if (req.body && req.body.model) {
-    model = models.find((model) => model === req.body.model);
-
-    if (!model) {
-      res.status(400).json({
-        status: 400,
-        message: `Invalid model option. The available models are: ${models.reduce(
-          (str, model, index) => {
+      if (!model) {
+        res.status(400).json({
+          status: 400,
+          message: `Invalid model option. The available models are: ${[
+            'nova-2',
+            ...localWhisperXModels,
+          ].reduce((str, model, index) => {
             if (index === 0) return model;
-            if (index === models.length - 1) return `${str}, and ${model}`;
+            if (index === localWhisperXModels.length - 1)
+              return `${str}, and ${model}`;
             return `${str}, ${model}`;
-          },
-          ''
-        )}. Default is medium.`,
-      });
-      return;
-    }
-
-    if (process.env.SUPPORT_LARGE_MODEL !== 'true' && model.includes('large')) {
-      res.status(501).json({
-        status: 501,
-        message: `Model '${model}' is not supported by the CPU of the server. Please try using lower models.`,
-      });
-      return;
-    }
-  }
-
-  // check if file exists
-  const filename = req.file?.filename;
-  if (!filename) {
-    res.status(400).json({
-      status: 400,
-      message: 'Missing audio file or unsupported',
-    });
-    logger.error('Error: Missing audio file or unsupported.');
-    return;
-  }
-
-  // process audio
-  isProcessing = true;
-  logger.info(
-    `Processing audio file: ${filename} (model: ${
-      model ?? 'medium'
-    }, language: ${language?.code ?? 'auto'})`
-  );
-
-  const uploadDir = appConfig.paths.UPLOAD_FOLDER;
-  exec(
-    `whisperx --compute_type float32 --output_format srt ${
-      model ? `--model ${model}` : ''
-    } ${language ? `--language ${language.code}` : ''} --hf_token ${
-      process.env.HUGGING_FACE_TOKEN
-    } ${path.join(uploadDir, filename)} -o ${uploadDir}`,
-    async (error, stdout, stderr) => {
-      isProcessing = false;
-
-      if (error) {
-        logger.error(
-          error,
-          `Error executing command: ${stderr || error.message}`
-        );
-        res.status(500).json({
-          status: 500,
-          message: `Could not transcribe audio`,
+          }, '')}. Default is nova-2.`,
         });
         return;
       }
 
-      logger.info(`Processed audio file: ${filename}`);
+      if (
+        process.env.SUPPORT_LARGE_MODEL !== 'true' &&
+        model.includes('large')
+      ) {
+        res.status(501).json({
+          status: 501,
+          message: `Model '${model}' is not supported by the CPU of the server. Please try using lower models or use the nova-2 model which is processed by Deepgram and not by this server's CPU.`,
+        });
+        return;
+      }
+    }
 
-      logger.info(`Creating summary: ${filename}`);
-      const transcription = await fs.readFile(
-        path.join(uploadDir, `${filename}.srt`),
-        {
-          encoding: 'utf-8',
+    if (!model) model = 'nova-2'; // default to using nova-2 if model isn't given
+
+    // language option
+    let language: LocalWhisperXLanguage | NovaLanguage | undefined;
+    if (req.body && req.body.language) {
+      if (model === 'nova-2') {
+        language = novaLanguages.find(
+          (language) =>
+            language.language === req.body.language ||
+            language.code === req.body.language
+        ) as LocalWhisperXLanguage | undefined;
+      } else {
+        language = localWhisperXLanguages.find(
+          (language) =>
+            language.language === req.body.language ||
+            language.code === req.body.language
+        ) as LocalWhisperXLanguage | undefined;
+      }
+
+      if (!language) {
+        res.status(400).json({
+          status: 400,
+          message: 'Invalid language option or unsupported.',
+        });
+        return;
+      }
+    }
+
+    // check if file exists
+    const filename = req.file?.filename;
+    if (!filename) {
+      res.status(400).json({
+        status: 400,
+        message: 'Missing audio file or unsupported',
+      });
+      logger.error('Error: Missing audio file or unsupported.');
+      return;
+    }
+
+    // process audio
+    try {
+      let transcription = '';
+      if (model === 'nova-2') {
+        transcription = await transcribe(filename, {
+          model: 'nova-2',
+          language: language as NovaLanguage,
+        });
+      } else {
+        if (process.env.SUPPORT_LOCAL_TRANSCRIPTION !== 'true') {
+          res.status(501).json({
+            status: 501,
+            message: `Local transcription is not supported by the server. Use the 'nova-2' model.`,
+          });
+          return;
         }
-      );
 
+        transcription = await transcribe(filename, {
+          model: 'local-whisperx',
+          localModel: model as LocalWhisperXModels,
+          language: language as LocalWhisperXLanguage,
+        });
+      }
+
+      if (!transcription) {
+        res.status(500).json({
+          status: 500,
+          message: `Transcription failed`,
+        });
+        return;
+      }
+
+      // create summary
+      logger.info(`Creating summary: ${filename}`);
       const summary = await writeSummary(transcription, language);
       if (!summary) {
         logger.error(
@@ -140,27 +152,32 @@ apiRouter.post('/upload', upload.single('audio'), (req, res) => {
           status: 500,
           message: `Could not write summary`,
         });
-        await removeTmpFiles();
+        await fs.unlink(path.join(appConfig.paths.UPLOAD_FOLDER, filename));
         return;
       }
 
+      await fs.unlink(path.join(appConfig.paths.UPLOAD_FOLDER, filename));
       logger.info(`Created summary: ${filename}`);
-
-      await removeTmpFiles();
-      logger.info(
-        `Finished transcription and summarization of audio file: ${filename}`
-      );
 
       res.json({
         status: 200,
         message: summary,
         options: {
           language: language?.code ?? 'auto',
-          model: model ?? 'medium',
+          model,
         },
       });
+    } catch (error) {
+      await fs.unlink(path.join(appConfig.paths.UPLOAD_FOLDER, filename));
+      res.status(500).json({
+        status: 500,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'An internal error occurred.',
+      });
     }
-  );
-});
+  })
+);
 
 export default apiRouter;

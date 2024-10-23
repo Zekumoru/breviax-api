@@ -1,4 +1,4 @@
-export default [
+const localWhisperXModels = [
   'tiny.en',
   'tiny',
   'base.en',
@@ -14,4 +14,7 @@ export default [
   'distil-large-v2',
   'distil-medium.en',
   'distil-small.en',
-];
+] as const;
+
+export default localWhisperXModels;
+export type LocalWhisperXModels = (typeof localWhisperXModels)[number];

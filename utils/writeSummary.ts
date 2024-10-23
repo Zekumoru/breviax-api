@@ -2,14 +2,15 @@ import OpenAI from 'openai';
 import fs from 'fs/promises';
 import path from 'path';
 import appConfig from '../appConfig';
-import { Language } from './languages';
+import { LocalWhisperXLanguage } from './transcribe-handlers/local-whisperx/local-whisperx-languages';
 import { ChatCompletionMessageParam } from 'openai/resources';
+import { NovaLanguage } from './transcribe-handlers/nova/nova-languages';
 
 let prompt = '';
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const writeSummary = async (
   transcription: string,
-  language?: Language | null
+  language?: LocalWhisperXLanguage | NovaLanguage | null
 ) => {
   if (!prompt) {
     prompt = await fs.readFile(path.join(appConfig.paths.PROMPT_FILE), {

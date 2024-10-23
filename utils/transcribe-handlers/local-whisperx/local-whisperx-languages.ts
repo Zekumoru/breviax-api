@@ -1,4 +1,4 @@
-const languages = [
+const localWhisperXLanguages = [
   { language: 'Afrikaans', code: 'af' },
   { language: 'Amharic', code: 'am' },
   { language: 'Arabic', code: 'ar' },
@@ -101,7 +101,9 @@ const languages = [
   { language: 'Chinese', code: 'zh' },
 ] as const;
 
-export default languages;
-export type LanguageName = (typeof languages)[number]['language'];
-export type LanguageCode = (typeof languages)[number]['code'];
-export type Language = (typeof languages)[number];
+export default localWhisperXLanguages;
+export type LocalWhisperXLanguageName =
+  (typeof localWhisperXLanguages)[number]['language'];
+export type LocalWhisperxLanguageCode =
+  (typeof localWhisperXLanguages)[number]['code'];
+export type LocalWhisperXLanguage = (typeof localWhisperXLanguages)[number];
