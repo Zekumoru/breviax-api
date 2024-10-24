@@ -1,4 +1,4 @@
-import { createClient } from '@deepgram/sdk';
+import { createClient, PrerecordedSchema } from '@deepgram/sdk';
 import { srt } from '@deepgram/captions';
 import fs from 'fs/promises';
 import logger from '../../logger';
@@ -36,7 +36,7 @@ const novaTranscribe = async (
   const file = await fs.readFile(path.join(uploadDir, filename));
   const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
     file,
-    Object.assign(
+    Object.assign<PrerecordedSchema, PrerecordedSchema>(
       {
         model: 'nova-2',
         smart_format: true,
