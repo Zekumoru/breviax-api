@@ -59,6 +59,7 @@ const novaTranscribe = async (
   try {
     return srt(result);
   } catch (error) {
+    logger.error(error, `Could not convert transcribed audio to srt`);
     return '';
   }
 };
